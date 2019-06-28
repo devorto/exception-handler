@@ -1,0 +1,27 @@
+{
+	"name": "devorto/exception-handler",
+	"description": "A class to convert standard php errors to exceptions and supports to log (un)caught to php-log and other loggers using LoggerInterface.",
+	"license": "MIT",
+	"type": "library",
+	"authors": [
+		{
+			"name": "Devorto",
+			"email": "info@devorto.com",
+			"homepage": "https://www.devorto.com/",
+			"role": "Owner"
+		},
+		{
+			"name": "Geoffrey Dijkstra",
+			"email": "geoffrey@devorto.com",
+			"role": "Developer"
+		}
+	],
+	"require": {
+		"psr/log": "^1.1.0"
+	},
+	"autoload": {
+		"psr-4": {
+			"Devorto\\": "src"
+		}
+	}
+}
