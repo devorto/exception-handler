@@ -37,9 +37,6 @@ class ExceptionHandler
 		set_error_handler([static::class, 'phpErrorToExceptionHandler'], E_ALL);
 		set_exception_handler([static::class, 'phpExceptionHandler']);
 		register_shutdown_function([static::class, 'phpShutdownHandler']);
-
-		// Start OB so we can discard already outputted content in case of errors.
-		ob_start();
 	}
 
 	/**
@@ -114,9 +111,6 @@ class ExceptionHandler
 	 */
 	public static function phpExceptionHandler(Throwable $throwable): void
 	{
-		// To clean up partial content.
-		ob_end_clean();
-
 		// Dump on screen when running in a test environment.
 		if (static::$showErrorsOnlyOnScreen) {
 			if (PHP_SAPI === 'cli') {
