@@ -6,7 +6,7 @@ use ErrorException;
 use Psr\Log\LoggerInterface;
 use Throwable;
 
-final class ExceptionHandler
+class ExceptionHandler
 {
 	/**
 	 * @var LoggerInterface[]
