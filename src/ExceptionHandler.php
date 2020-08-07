@@ -21,6 +21,11 @@ class ExceptionHandler
     /**
      * @var bool
      */
+    protected static $displayErrors;
+
+    /**
+     * @var bool
+     */
     protected static $notifyCustomLoggers;
 
     /**
@@ -31,11 +36,16 @@ class ExceptionHandler
     /**
      * Initializes the ExceptionHandler and sets default values for error handling.
      *
+     * @param bool $displayErrors When set to false, errors won't be written to screen.
      * @param bool $notifyCustomLoggers When set to false, custom loggers will not be notified.
      * @param bool $notifyErrorLog When set to false, php's error_log() will not be notified.
      */
-    public static function init(bool $notifyCustomLoggers = false, bool $notifyErrorLog = true): void
-    {
+    public static function init(
+        bool $displayErrors = false,
+        bool $notifyCustomLoggers = false,
+        bool $notifyErrorLog = true
+    ): void {
+        static::$displayErrors = $displayErrors;
         static::$notifyCustomLoggers = $notifyCustomLoggers;
         static::$notifyErrorLog = $notifyErrorLog;
 
@@ -76,12 +86,12 @@ class ExceptionHandler
         }
 
         // Trigger custom loggers? For example when in test environment we don't need to spam (production) logs.
-        if (static::$notifyCustomLoggers) {
+        if (!static::$notifyCustomLoggers) {
             return;
         }
 
         foreach (static::$loggers as $logger) {
-            // To prevent infinite loops when for some reason an Exception is being throw in the logger.
+            // To prevent infinite loops, when for some reason an Exception is being throw in the logger.
             try {
                 if ($isEmergency) {
                     $logger->emergency($throwable);
@@ -125,7 +135,7 @@ class ExceptionHandler
     public static function phpExceptionHandler(Throwable $throwable): void
     {
         // Dump on screen when running in a test environment.
-        if (static::$notifyCustomLoggers) {
+        if (static::$displayErrors) {
             if (PHP_SAPI === 'cli') {
                 echo $throwable . PHP_EOL;
             } else {
