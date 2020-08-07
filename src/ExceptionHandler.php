@@ -6,6 +6,11 @@ use ErrorException;
 use Psr\Log\LoggerInterface;
 use Throwable;
 
+/**
+ * Class ExceptionHandler
+ *
+ * @package Devorto
+ */
 class ExceptionHandler
 {
 	/**
@@ -16,17 +21,23 @@ class ExceptionHandler
 	/**
 	 * @var bool
 	 */
-	protected static $showErrorsOnlyOnScreen;
+	protected static $notifyCustomLoggers;
 
-	/**
-	 * Initializes the ExceptionHandler and sets default values for error handling.
-	 *
-	 * @param bool $showErrorsOnlyOnScreen When set to true, loggers will not be notified,
-	 * useful for test environments to prevent flooding logs.
-	 */
-	public static function init(bool $showErrorsOnlyOnScreen = false): void
+    /**
+     * @var bool
+     */
+    protected static $notifyErrorLog;
+
+    /**
+     * Initializes the ExceptionHandler and sets default values for error handling.
+     *
+     * @param bool $notifyCustomLoggers When set to false, custom loggers will not be notified.
+     * @param bool $notifyErrorLog When set to false, php's error_log() will not be notified.
+     */
+	public static function init(bool $notifyCustomLoggers = false, bool $notifyErrorLog = true): void
 	{
-		static::$showErrorsOnlyOnScreen = $showErrorsOnlyOnScreen;
+		static::$notifyCustomLoggers = $notifyCustomLoggers;
+		static::$notifyErrorLog = $notifyErrorLog;
 
 		// Force error reporting to always be on. But hide it for the user.
 		error_reporting(E_ALL);
@@ -59,13 +70,15 @@ class ExceptionHandler
 	 */
 	public static function log(Throwable $throwable, bool $isEmergency = false): void
 	{
-		// When in test environment we don't need to spam logs.
-		if (static::$showErrorsOnlyOnScreen) {
+        if (static::$notifyErrorLog) {
+            // Write error to standard php log, this works because of the magic __toString() function.
+            error_log($throwable);
+        }
+
+		// Trigger custom loggers? For example when in test environment we don't need to spam (production) logs.
+		if (static::$notifyCustomLoggers) {
 			return;
 		}
-
-		// Write error to standard php log, this works because of the magic __toString() function.
-		error_log($throwable);
 
 		foreach (static::$loggers as $logger) {
 			// To prevent infinite loops when for some reason an Exception is being throw in the logger.
@@ -112,7 +125,7 @@ class ExceptionHandler
 	public static function phpExceptionHandler(Throwable $throwable): void
 	{
 		// Dump on screen when running in a test environment.
-		if (static::$showErrorsOnlyOnScreen) {
+		if (static::$notifyCustomLoggers) {
 			if (PHP_SAPI === 'cli') {
 				echo $throwable . PHP_EOL;
 			} else {
