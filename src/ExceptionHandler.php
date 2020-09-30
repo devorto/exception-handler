@@ -90,13 +90,31 @@ class ExceptionHandler
             return;
         }
 
+        // Add some extra info if it was a web request.
+        $message = '';
+        if (PHP_SAPI !== 'cli') {
+            $message .= sprintf(
+                'Method: %s, %s%sURL: %s://%s%s%sUser-Agent: %s%s',
+                filter_input(INPUT_SERVER, 'SERVER_PROTOCOL', FILTER_DEFAULT),
+                filter_input(INPUT_SERVER, 'REQUEST_METHOD', FILTER_DEFAULT),
+                PHP_EOL,
+                filter_input(INPUT_SERVER, 'REQUEST_SCHEME', FILTER_DEFAULT),
+                filter_input(INPUT_SERVER, 'HTTP_HOST', FILTER_DEFAULT),
+                filter_input(INPUT_SERVER, 'REQUEST_URI', FILTER_DEFAULT),
+                PHP_EOL,
+                filter_input(INPUT_SERVER, 'HTTP_USER_AGENT', FILTER_DEFAULT),
+                PHP_EOL . PHP_EOL
+            );
+        }
+        $message .= $throwable;
+
         foreach (static::$loggers as $logger) {
             // To prevent infinite loops, when for some reason an Exception is being throw in the logger.
             try {
                 if ($isEmergency) {
-                    $logger->emergency($throwable);
+                    $logger->emergency($message);
                 } else {
-                    $logger->error($throwable);
+                    $logger->error($message);
                 }
             } catch (Throwable $throwable) {
                 // This is the only place we can notify our system that a logger died.
