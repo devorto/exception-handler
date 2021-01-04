@@ -152,19 +152,20 @@ class ExceptionHandler
      */
     public static function phpExceptionHandler(Throwable $throwable): void
     {
+        // Send $throwable to logs.
+        static::log($throwable, true);
+
         // Dump on screen when running in a test environment.
         if (static::$displayErrors) {
             if (PHP_SAPI === 'cli') {
                 echo $throwable . PHP_EOL;
             } else {
-                header('HTTP/1.0 500 Internal Server Error', true, 500);
+                http_response_code(500);
                 echo '<pre>' . htmlspecialchars($throwable) . '</pre>';
             }
-            exit;
-        }
 
-        // Send $throwable to logs.
-        static::log($throwable, true);
+            return;
+        }
 
         // Triggers web server default 500 error page.
         throw $throwable;
