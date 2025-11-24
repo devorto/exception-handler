@@ -94,13 +94,15 @@ class ExceptionHandler
         $message = '';
         if (PHP_SAPI !== 'cli') {
             $message .= sprintf(
-                'Method: %s, %s%sURL: %s://%s%s%sUser-Agent: %s%s',
+                'Method: %s, %s%sURL: %s://%s%s%sReferer:%s%sUser-Agent: %s%s',
                 filter_input(INPUT_SERVER, 'SERVER_PROTOCOL', FILTER_DEFAULT),
                 filter_input(INPUT_SERVER, 'REQUEST_METHOD', FILTER_DEFAULT),
                 PHP_EOL,
                 filter_input(INPUT_SERVER, 'REQUEST_SCHEME', FILTER_DEFAULT),
                 filter_input(INPUT_SERVER, 'HTTP_HOST', FILTER_DEFAULT),
                 filter_input(INPUT_SERVER, 'REQUEST_URI', FILTER_DEFAULT),
+                PHP_EOL,
+                filter_input(INPUT_SERVER, 'HTTP_REFERER', FILTER_DEFAULT),
                 PHP_EOL,
                 filter_input(INPUT_SERVER, 'HTTP_USER_AGENT', FILTER_DEFAULT),
                 PHP_EOL . PHP_EOL
